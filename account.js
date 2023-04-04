@@ -1,7 +1,7 @@
 const ERC20_ABI = require('./token.json')
 const axios = require('axios')
 const { ethers } = require('ethers')
-
+const fs = require('fs')
 const network = {
     '128': {
         label: 'Heco',
@@ -67,21 +67,18 @@ const account = {
 async function getTokenBalanceList(chainId) {
     let priceList = await getTokenPriceList(chainId)
     let accountToken = []
-    console.log('触发', priceList.length, '网络' + chainId)
     // let list = priceList.slice(0,20)
     for (const item of priceList) {
         const tp = Number(item.price)
         const balance = await contractct(chainId, item.tokenAddress, account[chainId])
         if (balance > 0) {
-            console.log('get ', item.tokenAddress)
             let usd = (balance * tp).toFixed(2)
             let value = Object.assign(item, { balance: balance, usd })
             accountToken.push(value)
         }
     }
     // 输出结果
-    console.table(accountToken)
-    return accountToken
+    fs.writeFileSync(`./data/${chainId}/token.json`, JSON.stringify(accountToken), 'utf-8')
 }
 
 // 获取lp
