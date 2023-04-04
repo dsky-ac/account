@@ -95,9 +95,14 @@ async function getLPBalanceList(chainId) {
             accountLP.push(value)
         }
     }
-    console.table(accountLP)
-    return accountLP
+    fs.writeFileSync(`./data/${chainId}/lps.json`, JSON.stringify(accountLP), 'utf-8')
 }
 
-getTokenBalanceList(56)
-// getLPBalanceList(56)
+async function getData() {
+    await getTokenBalanceList(56)
+    await getTokenBalanceList(128)
+    await getLPBalanceList(56)
+    await getLPBalanceList(128)
+}
+
+getData()
