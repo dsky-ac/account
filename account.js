@@ -85,12 +85,15 @@ async function getTokenBalanceList(chainId) {
 async function getLPBalanceList(chainId) {
     const res = await axios.get("https://info.mdex.one/pair/all?chain_id=" + chainId)
     let accountLP = []
+    const provider = new ethers.providers.JsonRpcProvider(network[chainId].url)
     for (const item of res.data.result) {
         const address_price = 1
         const tvl = Number(item.tvl)
+        const lpContract = new ethers.Contract(item.address, ERC20_ABI, provider);
+        const totalSupply = await lpContract['totalSupply']();
         const balance = await contractct(chainId, item.address, account[chainId])
         if (balance > 0) {
-            let usd = (tvl / address_price) * balance
+            let usd = (balance / ethers.utils.formatUnits(totalSupply, 18)) * tvl
             let value = Object.assign(item, { price: address_price, balance: balance, usd })
             accountLP.push(value)
         }
