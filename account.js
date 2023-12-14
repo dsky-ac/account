@@ -61,7 +61,7 @@ async function contractct(chainId, address, account, isToken = false) {
         } else {
             decimal = await tokenContract.decimals();
             Object.assign(decimalData, { [address]: decimal })
-            fs.writeFileSync(`./data/${chainId}/decimal.json`, JSON.stringify(tokenDecimal), 'utf-8')
+            fs.writeFileSync(`./data/${chainId}/decimal.json`, JSON.stringify(decimalData), 'utf-8')
         }
     }
     const tokenBalance = ethers.utils.formatUnits(balance, decimal)
