@@ -54,8 +54,8 @@ async function contractct(chainId, address, account, isToken = false) {
     const balance = await tokenContract.balanceOf(account)
     let decimal = 18
     if(isToken) {
-        const decimalData = fs.readFileSync(`./data/${chainId}/decimal.json`, 'utf-8');
-        const tokenDecimal = JSON.parse(decimalData)[address];
+        const decimalData = JSON.parse(fs.readFileSync(`./data/${chainId}/decimal.json`, 'utf-8')) || {};
+        const tokenDecimal = decimalData[address];
         if(tokenDecimal) {
             decimal = tokenDecimal
         } else {
