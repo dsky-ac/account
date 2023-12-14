@@ -68,16 +68,15 @@ async function getTokenBalanceList(chainId) {
     let priceList = await getTokenPriceList(chainId)
     let accountToken = []
     // let list = priceList.slice(0,20)
+    console.log('priceList', priceList)
     for (const item of priceList) {
         const tp = Number(item.price)
-        if(tp > 300) {
-            const balance = await contractct(chainId, item.tokenAddress, account[chainId])
+        const balance = await contractct(chainId, item.tokenAddress, account[chainId])
             if (balance > 0) {
                 let usd = (balance * tp).toFixed(2)
                 let value = Object.assign(item, { balance: balance, usd })
                 accountToken.push(value)
             }
-        }
     }
     // 输出结果
     fs.writeFileSync(`./data/${chainId}/token.json`, JSON.stringify(accountToken), 'utf-8')
@@ -91,8 +90,7 @@ async function getLPBalanceList(chainId) {
     const provider = new ethers.providers.JsonRpcProvider(network[chainId].url)
     for (const item of res.data.result) {
         const tvl = Number(item.tvl)
-        if(tvl > 500) {
-            const lpContract = new ethers.Contract(item.address, ERC20_ABI, provider);
+        const lpContract = new ethers.Contract(item.address, ERC20_ABI, provider);
             const balance = await contractct(chainId, item.address, account[chainId])
             if (balance > 0) {
                 const totalSupply = await lpContract['totalSupply']();
@@ -101,7 +99,6 @@ async function getLPBalanceList(chainId) {
                 let value = Object.assign(item, { price: address_price, balance: balance, usd })
                 accountLP.push(value)
             }
-        }
     }
     fs.writeFileSync(`./data/${chainId}/lps.json`, JSON.stringify(accountLP), 'utf-8')
     console.log(`save ${chainId} lps.json success`)
