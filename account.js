@@ -117,9 +117,9 @@ async function getLPBalanceList(chainId) {
 async function getData() {
     try {
         await getTokenBalanceList(56)
-        // await getTokenBalanceList(128)
-        // await getLPBalanceList(56)
-        // await getLPBalanceList(128)
+        await getTokenBalanceList(128)
+        await getLPBalanceList(56)
+        await getLPBalanceList(128)
     } catch (error) {
         console.error(error)
     }
