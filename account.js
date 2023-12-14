@@ -68,7 +68,6 @@ async function getTokenBalanceList(chainId) {
     let priceList = await getTokenPriceList(chainId)
     let accountToken = []
     // let list = priceList.slice(0,20)
-    console.log('priceList', priceList)
     for (const item of priceList) {
         const tp = Number(item.price)
         const balance = await contractct(chainId, item.tokenAddress, account[chainId])
