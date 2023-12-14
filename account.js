@@ -48,11 +48,14 @@ async function getTokenPriceList(chainId) {
     })
     return tokensList
 }
-async function contractct(chainId, address, account) {
+async function contractct(chainId, address, account, isToken = false) {
     const provider = new ethers.providers.JsonRpcProvider(network[chainId].url)
     const tokenContract = new ethers.Contract(address, ERC20_ABI, provider)
     const balance = await tokenContract.balanceOf(account)
-    const decimal = await tokenContract.decimals();
+    let decimal = 18
+    if(isToken) {
+        decimal = await tokenContract.decimals();
+    }
     const tokenBalance = ethers.utils.formatUnits(balance, decimal)
     return Number(tokenBalance).toFixed(5)
 }
@@ -70,7 +73,7 @@ async function getTokenBalanceList(chainId) {
     // let list = priceList.slice(0,20)
     for (const item of priceList) {
         const tp = Number(item.price)
-        const balance = await contractct(chainId, item.tokenAddress, account[chainId])
+        const balance = await contractct(chainId, item.tokenAddress, account[chainId], true)
             if (balance > 0) {
                 let usd = (balance * tp).toFixed(2)
                 let value = Object.assign(item, { balance: balance, usd })
