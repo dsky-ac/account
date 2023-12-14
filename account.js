@@ -60,7 +60,7 @@ async function contractct(chainId, address, account, isToken = false) {
             decimal = tokenDecimal
         } else {
             decimal = await tokenContract.decimals();
-            tokenDecimal[address] = decimal;
+            Object.assign(decimalData, { [address]: decimal })
             fs.writeFileSync(`./data/${chainId}/decimal.json`, JSON.stringify(tokenDecimal), 'utf-8')
         }
     }
