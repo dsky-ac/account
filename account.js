@@ -78,12 +78,14 @@ const account = {
 async function getTokenBalanceList(chainId) {
     let priceList = await getTokenPriceList(chainId)
     let accountToken = []
+    const totalUsd = 0
     // let list = priceList.slice(0,20)
     for (const item of priceList) {
         const tp = Number(item.price)
         const balance = await contractct(chainId, item.tokenAddress, account[chainId], true)
             if (balance > 0) {
                 let usd = (balance * tp).toFixed(2)
+                totalUsd += Number(usd)
                 if(usd > 10) {
                     let value = Object.assign(item, { balance: balance, usd })
                     accountToken.push(value)
@@ -93,6 +95,7 @@ async function getTokenBalanceList(chainId) {
     // 输出结果
     fs.writeFileSync(`./data/${chainId}/token.json`, JSON.stringify(accountToken), 'utf-8')
     console.log(`save ${chainId} token.json success`)
+    console.log(`${chainId} Token totalUsd is ${totalUsd}`);
 }
 
 // 获取lp
@@ -100,6 +103,7 @@ async function getLPBalanceList(chainId) {
     const res = await axios.get("https://info.mdex.one/pair/all?chain_id=" + chainId)
     let accountLP = []
     const provider = new ethers.providers.JsonRpcProvider(network[chainId].url)
+    const totalUsd = 0
     for (const item of res.data.result) {
         const tvl = Number(item.tvl)
         const lpContract = new ethers.Contract(item.address, ERC20_ABI, provider);
@@ -107,7 +111,8 @@ async function getLPBalanceList(chainId) {
             if (balance > 0) {
                 const totalSupply = await lpContract['totalSupply']();
                 const address_price = tvl / ethers.utils.formatUnits(totalSupply, 18)
-                let usd = balance * address_price
+                let usd = balance * address_price;
+                totalUsd += Number(usd)
                 if(usd > 10) {
                     let value = Object.assign(item, { price: address_price, balance: balance, usd })
                     accountLP.push(value)
@@ -115,7 +120,8 @@ async function getLPBalanceList(chainId) {
             }
     }
     fs.writeFileSync(`./data/${chainId}/lps.json`, JSON.stringify(accountLP), 'utf-8')
-    console.log(`save ${chainId} lps.json success`)
+    console.log(`save ${chainId} lps.json success`);
+    console.log(`${chainId} LP totalUsd is ${totalUsd}`);
 }
 
 async function getData() {
