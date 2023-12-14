@@ -54,7 +54,15 @@ async function contractct(chainId, address, account, isToken = false) {
     const balance = await tokenContract.balanceOf(account)
     let decimal = 18
     if(isToken) {
-        decimal = await tokenContract.decimals();
+        const decimalData = fs.readFileSync(`./data/${chainId}/decimal.json`, 'utf-8');
+        const tokenDecimal = JSON.parse(decimalData)[address];
+        if(tokenDecimal) {
+            decimal = tokenDecimal
+        } else {
+            decimal = await tokenContract.decimals();
+            tokenDecimal[address] = decimal;
+            fs.writeFileSync(`./data/${chainId}/decimal.json`, JSON.stringify(tokenDecimal), 'utf-8')
+        }
     }
     const tokenBalance = ethers.utils.formatUnits(balance, decimal)
     return Number(tokenBalance).toFixed(5)
@@ -109,9 +117,9 @@ async function getLPBalanceList(chainId) {
 async function getData() {
     try {
         await getTokenBalanceList(56)
-        await getTokenBalanceList(128)
-        await getLPBalanceList(56)
-        await getLPBalanceList(128)
+        // await getTokenBalanceList(128)
+        // await getLPBalanceList(56)
+        // await getLPBalanceList(128)
     } catch (error) {
         console.error(error)
     }
