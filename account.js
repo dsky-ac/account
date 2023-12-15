@@ -85,8 +85,8 @@ async function getTokenBalanceList(chainId) {
         const balance = await contractct(chainId, item.tokenAddress, account[chainId], true)
             if (balance > 0) {
                 let usd = (balance * tp).toFixed(2)
-                totalUsd += Number(usd)
                 if(usd > 10) {
+                    totalUsd += Number(usd) 
                     let value = Object.assign(item, { balance: balance, usd })
                     accountToken.push(value)
                 }
@@ -112,8 +112,8 @@ async function getLPBalanceList(chainId) {
                 const totalSupply = await lpContract['totalSupply']();
                 const address_price = tvl / ethers.utils.formatUnits(totalSupply, 18)
                 let usd = balance * address_price;
-                totalUsd += Number(usd)
                 if(usd > 10) {
+                    totalUsd += Number(usd)
                     let value = Object.assign(item, { price: address_price, balance: balance, usd })
                     accountLP.push(value)
                 }
