@@ -83,7 +83,7 @@ const allow = [
 ]
 const tokenPrice = {
     '0x64ff637fb478863b7468bc97d30a5bf3a428a1fd': 0,
-    '0x5ee41ab6edd38cdfb9f6b4e6cf7f75c87e170d98' : 1,
+    '0x5ee41ab6edd38cdfb9f6b4e6cf7f75c87e170d98': 1,
     '0x9362bbef4b8313a8aa9f0c9808b80577aa26b73b': 1,
     '0x66a79d23e58475d2738179ca52cd0b41d73f0bea': 0,
     '0xa71edc38d189767582c38a3145b5873052c3e47a': 1,
@@ -96,11 +96,11 @@ async function main() {
         const pairs = await getAllPairs(FACTORY_ADDRESS);
         const res = await axios.get('https://info.mdex.one/pair/token/price?chain_id=128')
         const ETH = res.data.result.find(item => item.tokenAddress === '0x64ff637fb478863b7468bc97d30a5bf3a428a1fd');
-        tokenPrice['0x64ff637fb478863b7468bc97d30a5bf3a428a1fd'] =  ETH.price
+        tokenPrice['0x64ff637fb478863b7468bc97d30a5bf3a428a1fd'] = ETH.price
         const btc = res.data.result.find(item => item.tokenAddress === '0x66a79d23e58475d2738179ca52cd0b41d73f0bea');
-        tokenPrice['0x66a79d23e58475d2738179ca52cd0b41d73f0bea'] =  btc.price
+        tokenPrice['0x66a79d23e58475d2738179ca52cd0b41d73f0bea'] = btc.price
         const wht = res.data.result.find(item => item.tokenAddress === '0x5545153ccfca01fbd7dd11c0b23ba694d9509a6f');
-        tokenPrice['0x5545153ccfca01fbd7dd11c0b23ba694d9509a6f'] =  wht.price
+        tokenPrice['0x5545153ccfca01fbd7dd11c0b23ba694d9509a6f'] = wht.price
         let index = 0
         for (const pairAddress of pairs) {
             const pairContract = new ethers.Contract(pairAddress, PAIR_ABI, provider);
@@ -108,38 +108,39 @@ async function main() {
             const token1 = await pairContract.token1();
             const userBalance = await pairContract.balanceOf(account[128]);
             console.log('start index', ++index)
-            if(!allow.includes(token0) && !allow.includes(token1)) {
+            if (!allow.includes(token0) && !allow.includes(token1)) {
                 continue
             }
-            if(userBalance > 0) {
+            if (userBalance > 0) {
                 const totalSupply = await pairContract.totalSupply();
-                if(allow.includes(token0)) {
+                if (allow.includes(token0)) {
                     const tokenContract = new ethers.Contract(token0, ERC20_ABI, provider);
-                    const decimals = await tokenContract.decimals(); 
+                    const decimals = await tokenContract.decimals();
                     const amountOutMin = await tokenContract.balanceOf(pairAddress)
                     const tokenAmount = ethers.utils.formatUnits(amountOutMin, decimals)
-                    const totalTVL =  tokenAmount * tokenPrice[token0] * 2
-                    const userTVL  = userBalance/totalSupply * totalTVL
+                    const totalTVL = tokenAmount * tokenPrice[token0] * 2
+                    const userTVL = userBalance / totalSupply * totalTVL
                     if (userTVL > 0.5) {
-                        tvlData[pairAddress] = userTVL
+                        tvlData[pairAddress]['tvl'] = userTVL
                         tvlData[pairAddress]['token0'] = token0
                         tvlData[pairAddress]['token1'] = token1
                     }
                 } else {
                     const tokenContract = new ethers.Contract(token1, ERC20_ABI, provider);
-                    const decimals = await tokenContract.decimals(); 
+                    const decimals = await tokenContract.decimals();
                     const amountOutMin = await tokenContract.balanceOf(pairAddress)
                     const tokenAmount = ethers.utils.formatUnits(amountOutMin, decimals)
-                    const totalTVL =  tokenAmount * tokenPrice[token1] * 2
-                    const userTVL  = userBalance/totalSupply * totalTVL
+                    const totalTVL = tokenAmount * tokenPrice[token1] * 2
+                    const userTVL = userBalance / totalSupply * totalTVL
                     if (userTVL > 0.5) {
-                        tvlData[pairAddress] = userTVL
+                        tvlData[pairAddress]['tvl'] = userTVL
                         tvlData[pairAddress]['token0'] = token0
                         tvlData[pairAddress]['token1'] = token1
                     }
                 }
+
             }
-            
+
         }
         fs.writeFileSync(`./data//hecoLP.json`, JSON.stringify(tvlData), 'utf-8')
     } catch (error) {
