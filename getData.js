@@ -5,7 +5,7 @@ const network = {
     '128': {
         label: 'Heco',
         value: '128',
-        url: 'https://http-mainnet.hecochain.com'
+        url: 'http://rpc.mezz.fi/heco'
     },
     '56': {
         label: 'BSC',
@@ -66,7 +66,7 @@ async function getAllPairs(factoryAddress) {
             pairAddresses.push(pairAddress);
             // console.log(`Pair ${i}: ${pairAddress}`);
         }
-
+        console.log('getAllPairs success')
         return pairAddresses;
     } catch (error) {
         console.error("Error fetching pairs:", error);
@@ -101,36 +101,45 @@ async function main() {
         tokenPrice['0x66a79d23e58475d2738179ca52cd0b41d73f0bea'] =  btc.price
         const wht = res.data.result.find(item => item.tokenAddress === '0x5545153ccfca01fbd7dd11c0b23ba694d9509a6f');
         tokenPrice['0x5545153ccfca01fbd7dd11c0b23ba694d9509a6f'] =  wht.price
+        let index = 0
         for (const pairAddress of pairs) {
             const pairContract = new ethers.Contract(pairAddress, PAIR_ABI, provider);
             const token0 = await pairContract.token0();
             const token1 = await pairContract.token1();
-            const totalSupply = await pairContract.totalSupply();
             const userBalance = await pairContract.balanceOf(account[128]);
+            console.log('start index', ++index)
             if(!allow.includes(token0) && !allow.includes(token1)) {
                 continue
             }
-            if(allow.includes(token0)) {
-                const tokenContract = new ethers.Contract(token0, ERC20_ABI, provider);
-                const decimals = await tokenContract.decimals(); 
-                const amountOutMin = await tokenContract.balanceOf(pairAddress)
-                const tokenAmount = ethers.utils.formatUnits(amountOutMin, decimals)
-                const totalTVL =  tokenAmount * tokenPrice[token0] * 2
-                const userTVL  = userBalance/totalSupply * totalTVL
-                if (userTVL > 0.5) {
-                    tvlData[pairAddress] = userTVL
-                }
-            } else {
-                const tokenContract = new ethers.Contract(token1, ERC20_ABI, provider);
-                const decimals = await tokenContract.decimals(); 
-                const amountOutMin = await tokenContract.balanceOf(pairAddress)
-                const tokenAmount = ethers.utils.formatUnits(amountOutMin, decimals)
-                const totalTVL =  tokenAmount * tokenPrice[token1] * 2
-                const userTVL  = userBalance/totalSupply * totalTVL
-                if (userTVL > 0.5) {
-                    tvlData[pairAddress] = userTVL
+            if(userBalance > 0) {
+                const totalSupply = await pairContract.totalSupply();
+                if(allow.includes(token0)) {
+                    const tokenContract = new ethers.Contract(token0, ERC20_ABI, provider);
+                    const decimals = await tokenContract.decimals(); 
+                    const amountOutMin = await tokenContract.balanceOf(pairAddress)
+                    const tokenAmount = ethers.utils.formatUnits(amountOutMin, decimals)
+                    const totalTVL =  tokenAmount * tokenPrice[token0] * 2
+                    const userTVL  = userBalance/totalSupply * totalTVL
+                    if (userTVL > 0.5) {
+                        tvlData[pairAddress] = userTVL
+                        tvlData[pairAddress]['token0'] = token0
+                        tvlData[pairAddress]['token1'] = token1
+                    }
+                } else {
+                    const tokenContract = new ethers.Contract(token1, ERC20_ABI, provider);
+                    const decimals = await tokenContract.decimals(); 
+                    const amountOutMin = await tokenContract.balanceOf(pairAddress)
+                    const tokenAmount = ethers.utils.formatUnits(amountOutMin, decimals)
+                    const totalTVL =  tokenAmount * tokenPrice[token1] * 2
+                    const userTVL  = userBalance/totalSupply * totalTVL
+                    if (userTVL > 0.5) {
+                        tvlData[pairAddress] = userTVL
+                        tvlData[pairAddress]['token0'] = token0
+                        tvlData[pairAddress]['token1'] = token1
+                    }
                 }
             }
+            
         }
         fs.writeFileSync(`./data//hecoLP.json`, JSON.stringify(tvlData), 'utf-8')
     } catch (error) {
