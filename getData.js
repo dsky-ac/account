@@ -54,6 +54,7 @@ const provider = new ethers.providers.JsonRpcProvider(network[128].url);
 
 async function getAllPairs(factoryAddress) {
     try {
+        console.time('start getAllPairs')
         const factoryContract = new ethers.Contract(factoryAddress, FACTORY_ABI, provider);
 
         // 获取所有 Pair 的数量
@@ -66,7 +67,7 @@ async function getAllPairs(factoryAddress) {
             pairAddresses.push(pairAddress);
             // console.log(`Pair ${i}: ${pairAddress}`);
         }
-        console.log('getAllPairs success')
+        console.timeEnd('start getAllPairs')
         return pairAddresses;
     } catch (error) {
         console.error("Error fetching pairs:", error);
@@ -102,6 +103,7 @@ async function main() {
         const wht = res.data.result.find(item => item.tokenAddress === '0x5545153ccfca01fbd7dd11c0b23ba694d9509a6f');
         tokenPrice['0x5545153ccfca01fbd7dd11c0b23ba694d9509a6f'] = wht.price
         let index = 0
+        console.time('start main')
         for (const pairAddress of pairs) {
             const pairContract = new ethers.Contract(pairAddress, PAIR_ABI, provider);
             const token0 = await pairContract.token0();
@@ -143,6 +145,7 @@ async function main() {
 
         }
         fs.writeFileSync(`./data//hecoLP.json`, JSON.stringify(tvlData), 'utf-8')
+        console.timeEnd('start main')
     } catch (error) {
         console.error("Error in main:", error);
     }
